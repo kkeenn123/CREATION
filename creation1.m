@@ -6,6 +6,7 @@
 
 %GAME START
 function creation1;
+tic;
 disp('Welcome to CREATION.');
 promptName = 'Please enter your name\n$ ';
 name = input(promptName, 's');
@@ -36,6 +37,8 @@ global inCombat;
 inCombat = false;
 global cntns;
 global door1Solved;
+global keyInDoor;
+keyInDoor = false;
 door1Solved = false;
 global incantLevel;
 incantLevel = 0;
@@ -148,7 +151,11 @@ Cinput;
         else
             fprintf('I don''t know how to %s',inputUser);
         end
-        Cinput;
+        if ~door1Solved
+            Cinput;
+        else
+            toc;
+        end
     end
 
     function Clook(inputUser)
@@ -163,7 +170,9 @@ Cinput;
         else disp(sprintf('Can''t see %s',inputCat));
         end
     end
-
+%CTake
+%Written for CREATION
+%By Ken Varghese
     function Ctake(inputUser)
          inputCat = inputUser(6:length(inputUser));
     for i=1:length(inventory)
@@ -175,7 +184,7 @@ Cinput;
     if locNum == 1
           if strcmpi(inputCat,'book')
               disp('Added book to inventory');
-              incantLevel = incantLevel + 5;
+              
               addToInven(inputCat);
           elseif strcmpi(inputCat,'window')
               disp('Can''t add that to inventory.');
@@ -281,6 +290,7 @@ Cinput;
             elseif enemyHealth < 3
                 disp('Enemy Vanquished');
                 inCombat = false;
+                killCount = killCount + 1;
                 combatMulti = combatMulti + 0.2;
             elseif rounds > 20
                 disp('Enemy ran away');
@@ -298,11 +308,18 @@ Cinput;
         found = false;
         if locNum == 7
         if strcmpi('door',inputCat)
+            if keyInDoor
             promptttt = 'Enter three digits into the combination lock: ';
             sequence = input(promptttt);
             if sequence == 756
                 door1Solved = true;
+                disp('YOU HAVE ESCAPED');
+                return;
             else disp('That wasn''t right. ');
+                return;
+            end
+            else
+                disp('The lock won''t move unless the key is in the door.');
             end
         end
         end
@@ -312,16 +329,20 @@ Cinput;
                 if strcmpi(inputCat,'apple')
                     health = health+5;
                     disp('Ate the apple');
+                    inventory{i2} = '';
                     break;
                 elseif strcmpi(inputCat,'candle')
                     disp('The candle is used automatically.');
                     break;
                 elseif strcmpi(inputCat,'book')
                     disp('You read the book. Your INCANT damage increases!');
+                    incantLevel = incantLevel + 5;
+                    inventory{i2} = '';
                     break;
                 elseif strcmpi(inputCat,'NORTHEAST KEY')
                     if locNum == 7
                         disp('The Key went into the door.');
+                        keyInDoor = true;
                         inventory{i2} = '';
                         break;
                     else disp('Can''t use that here');
@@ -396,6 +417,9 @@ Cinput;
                 location = CRooms.roomData(2).room6;
                 cntns = CRooms.roomData(3).room6;
             elseif strcmpi(loc,'west')
+                if killCount == 1
+                inCombat = true;
+                end
                 locNum = 7;
                 whereAmI = CRooms.roomData(1).room7;
                 location = CRooms.roomData(2).room7;
